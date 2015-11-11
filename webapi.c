@@ -6,6 +6,10 @@
 #include "espconn.h"
 #include "user_interface.h"
 #include "user_config.h"
+#include "rope.h"
+
+extern ctrlparms run;
+extern sysparms syscfg;
 
 void api_recv(void *arg, char *pdata, unsigned short len)
 {
@@ -22,7 +26,7 @@ void ICACHE_FLASH_ATTR api_handler(void *arg)
     int i;
     struct espconn *pConn = (struct espconn *)arg;
     
-    os_printf("api connection\n");
+    os_printf("api open\n");
     
     //pConn->reverse = my_http;
     espconn_regist_recvcb( pConn, api_recv );
@@ -52,8 +56,8 @@ void wifi_handler( System_Event_t *evt )
             break;
         case EVENT_STAMODE_DISCONNECTED:
             os_printf("disconnected: %s (%d)\n", evt->event_info.disconnected.ssid, evt->event_info.disconnected.reason);
-            deep_sleep_set_option( 0 );
-            system_deep_sleep( 30 * 1000 * 1000 );  // 30 seconds
+            //deep_sleep_set_option( 0 );
+            //system_deep_sleep( 30 * 1000 * 1000 );  // 30 seconds
             break;
         case EVENT_STAMODE_GOT_IP:
             os_printf("ip:" IPSTR ",mask:" IPSTR ",gw:" IPSTR "\n", IP2STR(&evt->event_info.got_ip.ip),

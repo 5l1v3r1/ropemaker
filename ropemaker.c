@@ -7,23 +7,54 @@
 #include "espconn.h"
 #include "user_interface.h"
 #include "user_config.h"
-
-void wifi_handler( System_Event_t *evt );
+#include "rope.h"
 
 static volatile os_timer_t tick_timer;
+static ctrlparms run;
+static sysparms syscfg;
+
+unsigned int get_foot_speed(int max_speed)
+{
+    int foot = system_adc_read();
+    return (foot < 50) ? 0 : (foot-50)*(max_speed-20)/974 + 20;   // simple linear, range 20 -> max_speed steps/sec
+}
 
 void tick_handler(void *arg)
 {
-    static int count = 0;
-    if( count++ % 1000 == 0 )
-        os_printf("tick\n");
+    if(run.scan_count-- == 0) {
+        run.scan_count = TICKS_SCAN;
+        if(run.speed < 0)
+            run.foot_speed = get_foot_speed(-run.speed);
+        if(GPIO_INPUT_GET(RUN_BTN) == 0) {
+            run.speed = LOAD_SPEED * abs(syscfg.twist16) / 16;
+            run.spin_count = TICKS_SEC / run.speed;
+        } else 
+            run.speed = 0;
+    }
+    if(run.speed == 0)
+        return;
+    if(run.spin_count-- == 0) {
+        run.spin_count = TICKS_SEC / (run.speed > 0 ? run.speed : run.foot_speed);
+        GPIO_OUTPUT_SET(SPIN_DIR, syscfg.twist16 > 0 ? 1 : 0);
+        GPIO_OUTPUT_SET(SPIN_STEP, 1);
+    } else
+        GPIO_OUTPUT_SET(SPIN_STEP, 0);
+    
+    if(run.feed_count-- == 0) {
+        run.feed_count = TICKS_SEC / (((run.speed > 0 ? run.speed : run.foot_speed) * 16) / abs(syscfg.twist16));
+        GPIO_OUTPUT_SET(FEED_STEP, 1);
+        run.feed_total++;
+        if(run.feed_total >= run.feed_stop)
+            run.speed = 0;
+    } else
+        GPIO_OUTPUT_SET(FEED_STEP, 0);
 }
 
 void user_init( void )
 {
     system_timer_reinit();
     
-    uart_div_modify( 0, UART_CLK_FREQ / ( 115200 ) );
+    uart_div_modify( 0, UART_CLK_FREQ / ( BAUD_RATE ) );
     os_printf( "\nRopeMaker started.\n");
 
     wifi_station_set_hostname( "ropemaker" );
@@ -32,7 +63,7 @@ void user_init( void )
     gpio_init();
     
     os_timer_setfn(&tick_timer, (os_timer_func_t *)tick_handler, NULL);
-    os_timer_arm_us(&tick_timer, 1000, 1);
+    os_timer_arm_us(&tick_timer, TICK_RATE, 1);
     
     static struct station_config config;
     config.bssid_set = 0;

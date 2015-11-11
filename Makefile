@@ -8,9 +8,9 @@ ropemaker-0x00000.bin: ropemaker
 
 ropemaker: ropemaker.o webapi.o
 
-ropemaker.o: ropemaker.c
+ropemaker.o: ropemaker.c rope.h
 
-webapi.o: webapi.c
+webapi.o: webapi.c rope.h
 
 flash: ropemaker-0x00000.bin
 	esptool.py -p /dev/ttyUSB0 -b 230400 write_flash 0x00000 ropemaker-0x00000.bin 0x40000 ropemaker-0x40000.bin
