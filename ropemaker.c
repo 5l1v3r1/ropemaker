@@ -7,7 +7,7 @@
 #include "espconn.h"
 #include "user_interface.h"
 #include "user_config.h"
-#include "rope.h"
+#include "ropemaker.h"
 
 static volatile os_timer_t tick_timer;
 static ctrlparms run;
@@ -21,7 +21,7 @@ unsigned int get_foot_speed(int max_speed)
 
 void tick_handler(void *arg)
 {
-    if(run.scan_count-- == 0) {
+    if(--run.scan_count == 0) {
         run.scan_count = TICKS_SCAN;
         if(run.speed < 0)
             run.foot_speed = get_foot_speed(-run.speed);
@@ -33,14 +33,14 @@ void tick_handler(void *arg)
     }
     if(run.speed == 0)
         return;
-    if(run.spin_count-- == 0) {
+    if(--run.spin_count == 0) {
         run.spin_count = TICKS_SEC / (run.speed > 0 ? run.speed : run.foot_speed);
         GPIO_OUTPUT_SET(SPIN_DIR, syscfg.twist16 > 0 ? 1 : 0);
         GPIO_OUTPUT_SET(SPIN_STEP, 1);
     } else
         GPIO_OUTPUT_SET(SPIN_STEP, 0);
     
-    if(run.feed_count-- == 0) {
+    if(--run.feed_count == 0) {
         run.feed_count = TICKS_SEC / (((run.speed > 0 ? run.speed : run.foot_speed) * 16) / abs(syscfg.twist16));
         GPIO_OUTPUT_SET(FEED_STEP, 1);
         run.feed_total++;

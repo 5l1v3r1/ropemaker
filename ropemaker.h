@@ -1,6 +1,7 @@
 // ropemaker definitions
 
 #define BAUD_RATE           115200
+#define HTTP_BUFFER_SIZE    256
 
 #define TICK_RATE           100 // uS per tick 
 #define TICKS_SCAN          500 // ticks per foot/btn scan
@@ -38,10 +39,10 @@ typedef struct {
     
 // GPIO pin mappings
 #define RUN_BTN     0
-#define SPIN_STEP   16
+#define SPIN_STEP   12
 #define SPIN_DIR    14
 #define FEED_STEP   13
-#define STEP_ENABLE 12
+#define STEP_ENABLE 4
 
 void wifi_handler( System_Event_t *evt );
 

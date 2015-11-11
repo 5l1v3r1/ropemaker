@@ -6,14 +6,51 @@
 #include "espconn.h"
 #include "user_interface.h"
 #include "user_config.h"
-#include "rope.h"
+#include "ropemaker.h"
 
 extern ctrlparms run;
 extern sysparms syscfg;
 
+extern const unsigned int html_len;
+extern const INFLASH uint8 html[];
+
+void update_state(char *qstr)
+{
+    
+}
+
+void send_html(struct espconn *pConn)
+{
+	char buf[HTTP_BUFFER_SIZE];
+            
+    os_sprintf(buf, "Content Length: %d\r\nContent Type: text/html\r\nContent Encoding: gzip\r\n\r\n", html_len);
+    espconn_sent(pConn, (uint8*)buf, os_strlen(buf));
+    unsigned int n = html_len, nR;
+    while(n > 0) {
+        nR = n < HTTP_BUFFER_SIZE ? n : HTTP_BUFFER_SIZE;
+        spi_flash_read((uint32)&html+html_len-n, (uint32*)buf, nR);
+        espconn_sent(pConn, (uint8*)buf, nR);
+        n -= nR;
+    }
+}
+
+void send_state(struct espconn *pConn)
+{
+    
+}
+
 void api_recv(void *arg, char *pdata, unsigned short len)
 {
-    os_printf("api recv: %s\n", pdata);
+    struct espconn *pConn = (struct espconn *) arg;
+    if(!strncmp(pdata, "GET ", 4)) {
+        if(!strncmp(pdata+4, "/state", 5)) { // get state
+            send_state(pConn);
+        } else  // is index.html
+            send_html(pConn);
+    } else if(!strncmp(pdata, "POST ", 5)) { // update state
+        update_state(pdata+5);
+    } else
+        os_printf("api req: %s\n", pdata);
 }
 
 void api_disconnect(void *arg)
