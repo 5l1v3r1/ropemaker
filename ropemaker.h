@@ -1,12 +1,16 @@
 // ropemaker definitions
 
+#ifndef ROPEMAKER_H
+#define ROPEMAKER_H
+
 #define BAUD_RATE           115200
-#define HTTP_BUFFER_SIZE    256
+#define HTTP_BUFFER_SIZE    256 // must be multiple of 4
 
 #define TICK_RATE           100 // uS per tick 
 #define TICKS_SCAN          500 // ticks per foot/btn scan
 #define TICKS_SEC           10000 // ticks per second for speed calc
 #define LOAD_SPEED          25 // run btn steps/sec feed, 0.5cm/sec
+#define STEPS_METER         5013 // feed based on 1/2" roller, before calibrated for slip
 
 typedef struct {
     
@@ -21,7 +25,7 @@ typedef struct {
     
     unsigned int foot_speed;
     
-} ctrlparms;
+} runparms;
 
 typedef struct {
     
@@ -46,3 +50,4 @@ typedef struct {
 
 void wifi_handler( System_Event_t *evt );
 
+#endif

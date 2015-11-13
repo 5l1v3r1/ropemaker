@@ -10,8 +10,8 @@
 #include "ropemaker.h"
 
 static volatile os_timer_t tick_timer;
-static ctrlparms run;
-static sysparms syscfg;
+runparms run;
+sysparms syscfg;
 
 unsigned int get_foot_speed(int max_speed)
 {

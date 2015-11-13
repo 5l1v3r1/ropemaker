@@ -6,56 +6,96 @@
 #include "espconn.h"
 #include "user_interface.h"
 #include "user_config.h"
+#include "ffs.h"
 #include "ropemaker.h"
 
-extern ctrlparms run;
+extern runparms run;
 extern sysparms syscfg;
 
-extern const unsigned int html_len;
-extern const INFLASH uint8 html[];
+extern const unsigned int ffs_len;
+extern const ffsinfo ffs_dir[];
+extern const INFLASH unsigned char ffs_data[];
 
 void update_state(char *qstr)
 {
-    
-}
-
-void send_html(struct espconn *pConn)
-{
-	char buf[HTTP_BUFFER_SIZE];
-            
-    os_sprintf(buf, "Content Length: %d\r\nContent Type: text/html\r\nContent Encoding: gzip\r\n\r\n", html_len);
-    espconn_sent(pConn, (uint8*)buf, os_strlen(buf));
-    unsigned int n = html_len, nR;
-    while(n > 0) {
-        nR = n < HTTP_BUFFER_SIZE ? n : HTTP_BUFFER_SIZE;
-        spi_flash_read((uint32)&html+html_len-n, (uint32*)buf, nR);
-        espconn_sent(pConn, (uint8*)buf, nR);
-        n -= nR;
-    }
+    os_printf("POST:%s", qstr);
 }
 
 void send_state(struct espconn *pConn)
 {
+    char buf[HTTP_BUFFER_SIZE];
     
+    os_sprintf(buf, "{\"count\":%d,\"speed\":%d,\"stepsm\":%d,\"twist\":%d,\"stop\":%d}", 
+        run.feed_total, run.speed, STEPS_METER, syscfg.twist16, run.feed_stop);
+    espconn_send(pConn, (uint8*)buf, os_strlen(buf));
+    espconn_disconnect(pConn);
+}
+
+void send_file_chunk(void *arg)
+{
+    char buf[HTTP_BUFFER_SIZE];
+    
+    struct espconn *pConn = (struct espconn *)arg;
+    unsigned int idx = ((ffsending *)pConn->reverse)->idx;
+    unsigned int nRem = ((ffsending *)pConn->reverse)->rem; 
+            
+    if(nRem > 0) {
+        unsigned int nDo = nRem < HTTP_BUFFER_SIZE ? nRem : HTTP_BUFFER_SIZE;
+        spi_flash_read((uint32)ffs_data&0xFFFFF + ffs_dir[idx+1].off - nRem, (uint32*)buf, (nDo+3)&~3);
+        espconn_send(pConn, (uint8*)buf, nDo);
+        ((ffsending *)pConn->reverse)->rem -= nDo;
+    } else {
+        os_free(pConn->reverse);
+        espconn_disconnect(pConn);
+    }
+}
+
+void send_file(struct espconn *pConn, char *path)
+{
+	char buf[HTTP_BUFFER_SIZE];
+    int n;
+    
+    if(path[0] == '/' && path[1] == ' ')
+        path = "/index.html";
+    
+    for(n = 0; n < ffs_len; n++)
+        if(!os_strncmp(path+1, ffs_dir[n].path, os_strlen(ffs_dir[n].path))) 
+            break;
+            
+    if(n < ffs_len) {
+        os_printf("req %s\n", ffs_dir[n].path);
+        os_sprintf(buf, "HTTP/1.1 200 OK\r\nContent-Length: %d\r\nContent-Type: %s\r\n\r\n", ffs_dir[n+1].off - ffs_dir[n].off, ffs_dir[n].mime);
+        if(ffs_dir[n].enc[0]) 
+            os_sprintf(buf+os_strlen(buf)-2, "Content-Encoding: %s\r\n\r\n", ffs_dir[n].enc);
+        pConn->reverse = (ffsending *)os_malloc(sizeof(ffsending));
+        ((ffsending *)pConn->reverse)->idx = n;
+        ((ffsending *)pConn->reverse)->rem = (ffs_dir[n+1].off - ffs_dir[n].off);
+        espconn_regist_sentcb( pConn, send_file_chunk );
+        espconn_send(pConn, (uint8*)buf, os_strlen(buf));
+    } else {
+        os_sprintf(buf, "HTTP/1.1 404 NOT FOUND");
+        espconn_send(pConn, (uint8*)buf, os_strlen(buf));
+    }
 }
 
 void api_recv(void *arg, char *pdata, unsigned short len)
 {
     struct espconn *pConn = (struct espconn *) arg;
-    if(!strncmp(pdata, "GET ", 4)) {
-        if(!strncmp(pdata+4, "/state", 5)) { // get state
+
+    if(!os_strncmp(pdata, "GET ", 4)) {
+        if(!os_strncmp(pdata+4, "/state", 5)) { // get state
             send_state(pConn);
-        } else  // is index.html
-            send_html(pConn);
-    } else if(!strncmp(pdata, "POST ", 5)) { // update state
+        } else  // is a file
+            send_file(pConn, pdata+4);
+    } else if(!os_strncmp(pdata, "POST ", 5)) { // update state
         update_state(pdata+5);
     } else
-        os_printf("api req: %s\n", pdata);
+        os_printf("req: %s\n", pdata);
 }
 
 void api_disconnect(void *arg)
 {
-    os_printf("api close\n");
+    //os_printf("req close\n");
 }
 
 void ICACHE_FLASH_ATTR api_handler(void *arg)
@@ -63,9 +103,7 @@ void ICACHE_FLASH_ATTR api_handler(void *arg)
     int i;
     struct espconn *pConn = (struct espconn *)arg;
     
-    os_printf("api open\n");
-    
-    //pConn->reverse = my_http;
+    //os_printf("req open\n");
     espconn_regist_recvcb( pConn, api_recv );
     espconn_regist_disconcb( pConn, api_disconnect );
 }
