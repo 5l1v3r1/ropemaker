@@ -16,9 +16,31 @@ extern const unsigned int ffs_len;
 extern const ffsinfo ffs_dir[];
 extern const INFLASH unsigned char ffs_data[];
 
-void update_state(char *qstr)
+void update_state(struct espconn *pConn, char *pS)
 {
-    os_printf("POST:%s", qstr);
+    char buf[HTTP_BUFFER_SIZE];
+    
+    char *pZ = pS;
+    while(os_strncmp(pZ, "HTTP", 4)) pZ++; *pZ = 0;
+    
+    // actions: reset, run, stop, set 
+    if(!strcmp(pS, "reset"))
+        run.feed_total = 0;
+    else if(!strcmp(pS, "run"))
+        run.speed = syscfg.speed;
+    else if(!strcmp(pS, "stop"))
+        run.speed = 0;
+    else if(!strcmp(pS, "set")) {
+        // set: autostop, speed, twist, foot, profile - json values to set
+        char pJ = pZ+1;
+        while(os_strncmp(pJs, "\r\n\r\n", 4)) pJ++; pJ += 4;
+        
+    }
+    
+    os_printf("POST %s \nJSON %s\n", qstr, pJs);
+    os_sprintf(buf, "HTTP/1.1 200 OK\r\n\r\nOK\n");
+    espconn_send(pConn, (uint8*)buf, os_strlen(buf));
+    espconn_disconnect(pConn);
 }
 
 void send_state(struct espconn *pConn)
@@ -88,7 +110,7 @@ void api_recv(void *arg, char *pdata, unsigned short len)
         } else  // is a file
             send_file(pConn, pdata+4);
     } else if(!os_strncmp(pdata, "POST ", 5)) { // update state
-        update_state(pdata+5);
+        update_state(pConn, pdata+5);
     } else
         os_printf("req: %s\n", pdata);
 }
