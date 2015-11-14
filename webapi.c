@@ -20,7 +20,7 @@ void update_state(struct espconn *pConn, char *pS)
 {
     char buf[HTTP_BUFFER_SIZE];
     
-    char *pZ = pS;
+    char *pZ = pS, *pJ;
     while(os_strncmp(pZ, "HTTP", 4)) pZ++; *pZ = 0;
     
     // actions: reset, run, stop, set 
@@ -32,12 +32,12 @@ void update_state(struct espconn *pConn, char *pS)
         run.speed = 0;
     else if(!strcmp(pS, "set")) {
         // set: autostop, speed, twist, foot, profile - json values to set
-        char pJ = pZ+1;
-        while(os_strncmp(pJs, "\r\n\r\n", 4)) pJ++; pJ += 4;
+        pJ = pZ+1;
+        while(os_strncmp(pJ, "\r\n\r\n", 4)) pJ++; pJ += 4;
         
     }
     
-    os_printf("POST %s \nJSON %s\n", qstr, pJs);
+    os_printf("POST %s \nJSON %s\n", pS, pJ);
     os_sprintf(buf, "HTTP/1.1 200 OK\r\n\r\nOK\n");
     espconn_send(pConn, (uint8*)buf, os_strlen(buf));
     espconn_disconnect(pConn);
@@ -47,6 +47,7 @@ void send_state(struct espconn *pConn)
 {
     char buf[HTTP_BUFFER_SIZE];
     
+    os_printf("send state\n");
     os_sprintf(buf, "{\"count\":%d,\"speed\":%d,\"stepsm\":%d,\"twist\":%d,\"stop\":%d}", 
         run.feed_total, run.speed, STEPS_METER, syscfg.twist16, run.feed_stop);
     espconn_send(pConn, (uint8*)buf, os_strlen(buf));
@@ -153,8 +154,7 @@ void wifi_handler( System_Event_t *evt )
             break;
         case EVENT_STAMODE_DISCONNECTED:
             os_printf("disconnected: %s (%d)\n", evt->event_info.disconnected.ssid, evt->event_info.disconnected.reason);
-            //deep_sleep_set_option( 0 );
-            //system_deep_sleep( 30 * 1000 * 1000 );  // 30 seconds
+            // if cannot connect to AP then should become an AP to allow re-configuring
             break;
         case EVENT_STAMODE_GOT_IP:
             os_printf("ip:" IPSTR ",mask:" IPSTR ",gw:" IPSTR "\n", IP2STR(&evt->event_info.got_ip.ip),

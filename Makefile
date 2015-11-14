@@ -18,7 +18,7 @@ data.c: www/* mkffs ffs.h
 	./mkffs www
 
 flash: ropemaker-0x00000.bin
-	esptool.py -p /dev/ttyUSB0 -b 230400 write_flash 0x00000 ropemaker-0x00000.bin 0x40000 ropemaker-0x40000.bin
+	esptool.py -p /dev/ttyUSB0 -b 460800 write_flash 0x00000 ropemaker-0x00000.bin 0x40000 ropemaker-0x40000.bin
 
 clean:
 	rm *.o *.bin
