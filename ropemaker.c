@@ -26,29 +26,32 @@ void tick_handler(void *arg)
         if(run.speed < 0)
             run.foot_speed = get_foot_speed(-run.speed);
         if(GPIO_INPUT_GET(RUN_BTN) == 0) {
-            os_printf("RUN %d %d\n", syscfg.twist16, LOAD_SPEED * syscfg.twist16 / 16);
+            os_printf("RUN %d %d\n", syscfg.twist16 / 16, LOAD_SPEED * syscfg.twist16 / 16);
             run.speed = LOAD_SPEED * syscfg.twist16 / 16;
-            run.spin_count = TICKS_SEC / run.speed;
+            GPIO_OUTPUT_SET(SPIN_DIR, syscfg.twist16 > 0 ? 1 : 0);
+            GPIO_OUTPUT_SET(STEP_ENABLE, 1);
         } else {
             if(run.speed != 0)
-                os_printf("STOP\n");
-            run.speed = 0;
+                os_printf("STOP %d\n", run.feed_total);
+            GPIO_OUTPUT_SET(STEP_ENABLE, 0);
+            GPIO_OUTPUT_SET(SPIN_STEP, 0);
+            GPIO_OUTPUT_SET(FEED_STEP, 0);
+            run.speed = run.spin_count = run.feed_count = 0;
         }
     }
     if(run.speed == 0)
         return;
-    if(--run.spin_count == 0) {
+    if(--run.spin_count <= 0) {
         run.spin_count = TICKS_SEC / (run.speed > 0 ? run.speed : run.foot_speed);
-        GPIO_OUTPUT_SET(SPIN_DIR, syscfg.twist16 > 0 ? 1 : 0);
         GPIO_OUTPUT_SET(SPIN_STEP, 1);
     } else
         GPIO_OUTPUT_SET(SPIN_STEP, 0);
     
-    if(--run.feed_count == 0) {
-        run.feed_count = TICKS_SEC / (((run.speed > 0 ? run.speed : run.foot_speed) * 16) / abs(syscfg.twist16));
+    if(--run.feed_count <= 0) {
+        run.feed_count = TICKS_SEC / ((run.speed > 0 ? run.speed : run.foot_speed) * 16 / abs(syscfg.twist16));
         GPIO_OUTPUT_SET(FEED_STEP, 1);
         run.feed_total++;
-        if(run.feed_total >= run.feed_stop)
+        if(run.feed_stop > 0 && run.feed_total >= run.feed_stop)
             run.speed = 0;
     } else
         GPIO_OUTPUT_SET(FEED_STEP, 0);
@@ -68,9 +71,16 @@ void user_init( void )
 
     gpio_init();
     GPIO_DIS_OUTPUT(RUN_BTN);
+    PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO4_U, FUNC_GPIO4);
+    GPIO_OUTPUT_SET(STEP_ENABLE, 0);
+    PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, FUNC_GPIO13);
+    GPIO_OUTPUT_SET(SPIN_DIR, 0);
+    PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12);
+    GPIO_OUTPUT_SET(SPIN_STEP, 0);
+    PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, FUNC_GPIO14);
+    GPIO_OUTPUT_SET(FEED_STEP, 0);
     
     run.scan_count = TICKS_SCAN;
-    run.speed = 0;
     
     os_timer_disarm(&tick_timer);
     os_timer_setfn(&tick_timer, (os_timer_func_t *)tick_handler, NULL);

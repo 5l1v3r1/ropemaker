@@ -15,16 +15,15 @@
 
 typedef struct {
     
-    int speed;      // steps/sec,  <0 max foot speed, >0 preset speed, =0 stopped
+    int speed;          // steps/sec, <0 max foot speed, >0 preset speed, =0 stopped
+    int foot_speed;     // max speed, when foot pedal full down
     
-    unsigned int scan_count;
-    unsigned int spin_count;
-    unsigned int feed_count;
+    int scan_count;
+    int spin_count;
+    int feed_count;
     
     unsigned int feed_total;
     unsigned int feed_stop;
-    
-    unsigned int foot_speed;
     
 } runparms;
 
