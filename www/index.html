@@ -2,9 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>RopeMaker</title>
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <link href="main.css" rel="stylesheet">
+    <link href="favicon.png" rel="shortcut icon"> 
 </head>
 <body>
-This is a test. Station Identification. Breaker. Breaker. 10-4.
+<div class="line">
+    <div class="grp10">Profile</div>
+    <div class="grp20"><select id="profile" name="profile"><option>---</option></select></div>
+    <div class="grp10"><div class="btn">SAVE</div></div>
+    <div class="grp10"><div class="btn">DEL</div></div>
+    </div>
+<div class="line">
+    <div class="grp10">
+        <div class="btn">RUN</div>
+        <div class="btn">STOP</div>
+        </div>
+    <div class="grp20"><input id="count"  class="count" name="count" type="text"></div>
+        <div class="grp10"><div class="btn">Meters</div></div>
+    </div>
+<div class="line">
+    <div class="grp10">Speed</div>
+    <div class="grp20"><input id="count"  class="count" name="count" type="text"></div>
+    <div class="grp10"><div class="btn">Preset</div></div>
+    </div>
+<div class="line">
+    <div class="grp10">Twist</div>
+    <div class="grp20"><input id="count"  class="count" name="count" type="text"></div>
+    <div class="grp10"><div class="btn">CW</div></div>
+    <div class="grp10"><div class="btn">CCW</div></div></div>
+    </div>
+<script src="jquery.min.js"></script>
+<script src="main.js"></script>
 </body>
 </html>
