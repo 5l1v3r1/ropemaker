@@ -10,32 +10,53 @@
     <link href="favicon.png" rel="shortcut icon"> 
 </head>
 <body>
-<div class="line">
-    <div class="grp10">Profile</div>
-    <div class="grp20"><select id="profile" name="profile"><option>---</option></select></div>
-    <div class="grp10"><div class="btn">SAVE</div></div>
-    <div class="grp10"><div class="btn">DEL</div></div>
-    </div>
-<div class="line">
-    <div class="grp10">
-        <div class="btn">RUN</div>
-        <div class="btn">STOP</div>
+<div class="container centered">
+    <div class="col-xs-3 left-btn-col"><div class="btn-group-vertical left-btns">
+            <button class="btn btn-success btn-lg">RUN</button>
+            <button class="btn btn-danger btn-lg">STOP</button>
+            </div>
         </div>
-    <div class="grp20"><input id="count"  class="count" name="count" type="text"></div>
-        <div class="grp10"><div class="btn">Meters</div></div>
-    </div>
-<div class="line">
-    <div class="grp10">Speed</div>
-    <div class="grp20"><input id="count"  class="count" name="count" type="text"></div>
-    <div class="grp10"><div class="btn">Preset</div></div>
-    </div>
-<div class="line">
-    <div class="grp10">Twist</div>
-    <div class="grp20"><input id="count"  class="count" name="count" type="text"></div>
-    <div class="grp10"><div class="btn">CW</div></div>
-    <div class="grp10"><div class="btn">CCW</div></div></div>
-    </div>
+    <div class="col-xs-9">
+        <div class="row">
+            <div class="col-xs-2 text-center">Profile</div>
+            <div class="col-xs-4 text-center"><select class="ctrlvalue" id="profile" name="profile"><option>---</option></select></div>
+            <div class="col-xs-6"><button class="btn btn-primary">SAVE</button><button class="btn btn-danger">DEL</button></div>
+            </div>
+        <div class="row">
+            <div class="col-xs-2 text-center">Count</div>
+            <div class="col-xs-4 text-center"><input id="count"  class="ctrlvalue" name="count" type="text"></div>
+            <div class="col-xs-6">
+                <div class="btn-group"><button class="btn dropdown-toggle" id="count-mode" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                Meters <span class="caret"></span></button>
+                <ul class="dropdown-menu">
+                    <li><a href="#">Meters</a></li>
+                    <li><a href="#">Feet</a></li>
+                    <li><a href="#">To Do</a></li>
+                    </ul></div>
+                    <button class="btn btn-warning">CLR</button>
+                </div>
+            </div>
+        <div class="row">
+            <div class="col-xs-2 text-center">Speed</div>
+            <div class="col-xs-4 text-center"><input id="speed"  class="ctrlvalue" name="speed" type="text"></div>
+            <div class="col-xs-6">
+                <div class="btn-group"><button class="btn dropdown-toggle" id="count-mode" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                Preset <span class="caret"></span></button>
+                <ul class="dropdown-menu">
+                    <li><a href="#">Manual</a></li>
+                    <li><a href="#">Foot Max</a></li>
+                    </ul></div>
+                </div>
+            </div>
+        <div class="row">
+            <div class="col-xs-2 text-center">Twist</div>
+            <div class="col-xs-4 text-center"><input id="twist"  class="ctrlvalue" name="twist" type="text"></div>
+            <div class="col-xs-6"><button class="btn">CW</button><button class="btn">CCW</button></div>
+            </div>
+        </div>
+</div>
 <script src="jquery.min.js"></script>
+<script src="bootstrap.min.js"></script>
 <script src="main.js"></script>
 </body>
 </html>
