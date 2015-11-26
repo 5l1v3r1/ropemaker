@@ -43,10 +43,10 @@ typedef struct {
     
 // GPIO pin mappings
 #define RUN_BTN     0
-#define SPIN_STEP   12
-#define SPIN_DIR    13
-#define FEED_STEP   14
-#define STEP_ENABLE 4
+#define SPIN_STEP   12  // red
+#define SPIN_DIR    13  // yellow
+#define FEED_STEP   14  // purple short
+#define STEP_ENABLE 4   // purple long
 
 void wifi_handler( System_Event_t *evt );
 

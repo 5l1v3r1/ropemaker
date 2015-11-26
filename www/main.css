@@ -1,0 +1,25 @@
+
+.container { width: 640px; padding:10px; background:#eef; }
+.centered {
+      position: fixed;
+      top: 25%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+@media only screen and (max-device-height: 480px) {
+    .centered {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+}
+
+.ctrlvalue { width:100px; }
+#profile { width:150px; }
+
+.btn { margin: 2px; }
+.btn-lg { margin: auto; }
+
+.left-btn-col { position:relative; }
+.left-btns { position:absolute; top:50%; height:50px; margin-top:25px; }

@@ -64,7 +64,7 @@ void send_file_chunk(void *arg)
             
     if(nRem > 0) {
         unsigned int nDo = nRem < HTTP_BUFFER_SIZE ? nRem : HTTP_BUFFER_SIZE;
-        spi_flash_read((uint32)ffs_data&0xFFFFF + ffs_dir[idx+1].off - nRem, (uint32*)buf, (nDo+3)&~3);
+        spi_flash_read(((uint32)ffs_data&0xFFFFF) + ffs_dir[idx+1].off - nRem, (uint32*)buf, (nDo+3)&~3);
         espconn_send(pConn, (uint8*)buf, nDo);
         ((ffsending *)pConn->reverse)->rem -= nDo;
     } else {
