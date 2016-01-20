@@ -28,7 +28,7 @@ void tick_handler(void *arg)
         if(GPIO_INPUT_GET(RUN_BTN) == 0) {
             os_printf("RUN %d %d\n", syscfg.twist16 / 16, LOAD_SPEED * syscfg.twist16 / 16);
             run.speed = LOAD_SPEED * syscfg.twist16 / 16;
-            GPIO_OUTPUT_SET(SPIN_DIR, syscfg.twist16 > 0 ? 1 : 0);
+            GPIO_OUTPUT_SET(SPIN_DIR, syscfg.twist16 < 0 ? 1 : 0);
             GPIO_OUTPUT_SET(STEP_ENABLE, 1);
         } else {
             if(run.speed != 0)

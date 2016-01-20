@@ -9,7 +9,7 @@
 #define TICK_RATE           100 // uS per tick 
 #define TICKS_SCAN          300 // ticks per foot/btn scan
 #define TICKS_SEC           10000 // ticks per second for speed calc
-#define LOAD_SPEED          25 // run btn steps/sec feed, 0.5cm/sec
+#define LOAD_SPEED          150 // run btn steps/sec feed, 0.5cm/sec
 #define STEPS_METER         5013 // feed based on 1/2" roller, not calibrated for slip
 #define INIT_TWIST          4 // default at boot, twist ratio
 
